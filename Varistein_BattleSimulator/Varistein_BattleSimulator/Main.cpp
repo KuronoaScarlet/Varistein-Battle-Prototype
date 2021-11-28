@@ -69,6 +69,7 @@ int main()
 		if (player->state == BattleState::RUN || enemies.size() == 0 || allies.size() == 0) cont = false;
 
 		player->state = BattleState::UNKNOWN;
+		player->SetDefState(false);
 		pass = false;
 		order.clear();
 
