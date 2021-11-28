@@ -6,7 +6,6 @@ using namespace std;
 int main()
 {
 	// Starter variables
-
 	Character* player = new Character(70, 15, 20, "Nicole");
 	Character* enemy = new Character(200, 10, 10, "Monster");
 
@@ -28,28 +27,27 @@ int main()
 	do 
 	{
 		// Player Action
-		{ 
-			SelectAction();
+		SelectAction();
 
-			if (player->state != BattleState::RUN)
+		if (player->state != BattleState::RUN)
+		{
+			CombatState();
+
+			if (player->state == BattleState::ATTACK)
 			{
-				CombatState();
+				PerformAction();
+			}
 
-				if (player->state == BattleState::ATTACK)
-				{
-					PerformAction();
-				}
-
-				Check();
-				if (player->GetEnergy() < 10)
-				{
-					player->SetTotalEnergy(player->GetTotalEnergy() + 1);
-					player->SetEnergy(player->GetTotalEnergy() - player->GetOverchargedValue());
-				}
+			Check();
+			if (player->GetEnergy() < 10)
+			{
+				player->SetTotalEnergy(player->GetTotalEnergy() + 1);
+				player->SetEnergy(player->GetTotalEnergy() - player->GetOverchargedValue());
 			}
 		}
 		
 		// Enemy Action
+		if (player->state != BattleState::RUN && player->state != BattleState::OBJECT)
 		{
 			system("cls");
 			ShowStats();
@@ -61,20 +59,19 @@ int main()
 		}
 
 		// Checkers
+		if (player->GetOvercharged() == true && overchargedTurn == 0)
 		{
-			if (player->GetOvercharged() == true && overchargedTurn == 0)
-			{
-				player->SetOverchaged(false);
-				cout << "You're no longer Overcharged!" << endl;
-			}
-			if (overchargedTurn > 0) overchargedTurn--;
-
-			if (player->state == BattleState::RUN || enemies.size() == 0 || allies.size() == 0) cont = false;
-
-			player->state = BattleState::UNKNOWN;
-			pass = false;
-			order.clear();
+			player->SetOverchaged(false);
+			cout << "You're no longer Overcharged!" << endl;
 		}
+		if (overchargedTurn > 0) overchargedTurn--;
+
+		if (player->state == BattleState::RUN || enemies.size() == 0 || allies.size() == 0) cont = false;
+
+		player->state = BattleState::UNKNOWN;
+		pass = false;
+		order.clear();
+
 		cout << endl << endl;
 
 	} while (cont);
