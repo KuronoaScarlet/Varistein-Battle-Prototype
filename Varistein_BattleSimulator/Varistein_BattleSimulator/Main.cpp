@@ -11,13 +11,26 @@ int main()
 	allies.push_back(player);
 	enemies.push_back(enemy);
 
+	Ability* punch = new Ability(0, 15, 0, "Punch", Tag::OFFENSIVE);
+	player->abilities.push_back(punch);
+	Ability* empower = new Ability(1, 10, 0, "Empower", Tag::EFFECT);
+	player->abilities.push_back(empower);
+	Ability* chargedPunch = new Ability(2, 30, 0, "Charged Punch", Tag::OFFENSIVE);
+	player->abilities.push_back(chargedPunch);
+
 	do 
 	{
-		ShowStats();
 		SelectAction();
-		ShowStats();
 
-		// Combate kekw
+		if (player->state != BattleState::RUN)
+		{
+			CombatState();
+
+			// PerformAction();
+
+			// Check();
+		}
+
 	} while (player->GetHP() > 0 && player->state != BattleState::RUN);
 
 	if (player->GetHP() <= 0) cout << "You died." << endl;
