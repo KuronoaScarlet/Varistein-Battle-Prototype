@@ -6,7 +6,8 @@
 
 using namespace std;
 bool pass = false;
-float auxDmg = 0;
+int overchargedTurn = 0;
+int auxDmg = 0;
 
 enum struct Tag
 {
@@ -24,15 +25,18 @@ public:
 	int GetEnergy() { return energy; }
 	float GetValue() { return value; }
 	int GetCooldown() { return cooldown; }
+	bool GetBoosted() { return boosted; }
 	string GetName() { return name; }
 	Tag GetTag() { return tag; }
 
-	// Setters
-	void SetEffect(int boost, int* dmg) { auxDmg = (*dmg);  (*dmg) = (boost * 0.01) * (*dmg); }
+	// Setter
+	void SetEffect(int boost) { value = value + (boost * 0.01) * value; boosted = true; }
+	void SetValue(int _value) { value = _value; }
 private:
 	int energy;
 	float value;
 	int cooldown = 0;
+	bool boosted = false;
 	string name;
 	Tag tag;
 };
@@ -58,6 +62,11 @@ public:
 	int GetDef() { return def; }
 	int GetAtk() { return atk; }
 	int GetEnergy() { return energy; }
+	int GetTotalEnergy() { return totalEnergy; }
+	int GetOverchargedValue() { return overchargedValue; }
+	bool GetDefState() { return defendState; }
+	bool GetOvercharged() { return overcharged; }
+
 	string GetName() { return name; }
 
 	// Setters
@@ -65,12 +74,18 @@ public:
 	void SetDef(int _def) { def = _def; }
 	void SetAtk(int _atk) { atk = _atk; }
 	void SetEnergy(int _energy) { energy = _energy; }
+	void SetTotalEnergy(int _totalEnergy) { totalEnergy = _totalEnergy; }
+	void SetOverchargedValue(int _overchargedValue) { overchargedValue = _overchargedValue; }
 	void SetDefState(bool _defendState) { defendState = _defendState; }
+	void SetOverchaged(bool _overcharged) { overcharged = _overcharged; }
 
 protected:
 	int hp, def, atk;
 	bool defendState = false;
+	bool overcharged = false;
 	int energy = 2;
+	int totalEnergy = energy;
+	int overchargedValue = 0;
 	string name;
 
 public:
@@ -81,6 +96,9 @@ public:
 // Characters Lists
 std::vector<Character*> allies;
 std::vector<Character*> enemies;
+
+// Ability Order List
+std::vector<Ability*> order;
 
 // First Menu's Methods
 int Menu()
@@ -95,7 +113,7 @@ void ShowStats()
 {
 	for (int i = 0; i < allies.size(); i++)
 	{
-		cout << allies.at(i)->GetName() << "   " << "HP: " << allies.at(i)->GetHP() << "   " << "Energy: " << allies.at(i)->GetEnergy() << endl;
+		cout << allies.at(i)->GetName() << "   " << "HP: " << allies.at(i)->GetHP() << "   " << "Energy: " << allies.at(i)->GetEnergy() << "/" << allies.at(i)->GetTotalEnergy() << endl;
 	}
 	cout << endl;
 	for (int i = 0; i < enemies.size(); i++)
@@ -159,7 +177,7 @@ void AttackMenu()
 {
 	for (int i = 0; i < allies.at(0)->abilities.size(); i++)
 	{
-		cout << allies.at(0)->abilities.at(i)->GetName() << "   " << "Energy: " << allies.at(0)->abilities.at(i)->GetEnergy();
+		cout << i+1 << ". " << allies.at(0)->abilities.at(i)->GetName() << "   " << "Energy: " << allies.at(0)->abilities.at(i)->GetEnergy();
 		if (allies.at(0)->abilities.at(i)->GetTag() == Tag::OFFENSIVE)
 		{
 			cout << "    " << "Damage: " << allies.at(0)->abilities.at(i)->GetValue() << endl;
@@ -169,13 +187,97 @@ void AttackMenu()
 			cout << "    " << "Boost: " << allies.at(0)->abilities.at(i)->GetValue() << "%" << endl;
 		}
 	}
+	cout << endl << "Select the sequence of the abilities you want to use! Be careful with the energy, using more energy than your total will overcharge yourself! (Example, input 21): " << endl;
 
 	int selection;
 
 	scanf_s("%d", &selection);
 
+	system("cls");
 
+	while (selection > 0)
+	{
+		int ability = (selection % 10) - 1;
+		selection = selection / 10;
 
+		order.push_back(allies.at(0)->abilities.at(ability));
+	}
+
+	int aux = 0;
+
+	for (int i = order.size()-1; i >= 0; i--)
+	{
+		aux = aux + order.at(i)->GetEnergy();
+	}
+
+	if (aux <= allies.at(0)->GetEnergy())
+	{
+		cout << "Energy used: " << aux << endl;
+	}
+	else if (aux > allies.at(0)->GetEnergy())
+	{
+		if (allies.at(0)->GetOvercharged() == false)
+		{
+			cout << "Energy used: " << aux << endl << "Overcharge!" << endl << endl;
+			allies.at(0)->SetOverchargedValue(aux - allies.at(0)->GetEnergy());
+			allies.at(0)->SetOverchaged(true);
+			overchargedTurn = 1;
+		}
+		else if (allies.at(0)->GetOvercharged() == true)
+		{
+			cout << "You're on an overcharged state! Select again your abilities!" << endl;
+			order.clear();
+			AttackMenu();
+		}
+	}
+	system("pause");
+}
+
+void PerformAction()
+{
+	int totalDmg = 0;
+	for (int i = order.size() - 1; i >= 0; i--)
+	{
+		if (order.at(i)->GetTag() == Tag::OFFENSIVE)
+		{
+			// Damage Formula (HP = HP - ((Atk + abilitydmg) - Def)) Boosted Dmg is calculated earlier.
+			int totalAttackDmg = allies.at(0)->GetAtk() + order.at(i)->GetValue();
+			int dmgDone = totalAttackDmg - enemies.at(0)->GetDef();
+			enemies.at(0)->SetHP(enemies.at(0)->GetHP() - dmgDone);
+			cout << order.at(i)->GetName() << " did " << dmgDone << " damage to " << enemies.at(0)->GetName() << "." << endl << endl;
+			totalDmg += dmgDone;
+
+			if (order.at(i)->GetBoosted() == true)
+			{
+				order.at(i)->SetValue(auxDmg);
+				auxDmg = 0;
+			}
+
+			system("pause");
+		}
+		else if (order.at(i)->GetTag() == Tag::EFFECT && order.at(i - 1)->GetTag() == Tag::OFFENSIVE)
+		{
+			auxDmg = order.at(i - 1)->GetValue();
+			order.at(i - 1)->SetEffect(order.at(i)->GetValue());
+			cout << order.at(i)->GetName() << " boosted " << order.at(i - 1)->GetName() << " by a " << order.at(i)->GetValue() << "%" << endl << endl;
+			
+			system("pause");
+		}
+	}
+
+	cout << "You did " << totalDmg << " total damage to " << enemies.at(0)->GetName() << "." << endl;
+}
+
+void Check()
+{
+	for (int i = 0; i < enemies.size(); i++)
+	{
+		if (enemies.at(i)->GetHP() <= 0)
+		{
+			cout << enemies.at(i)->GetName() << " has died!" << endl;
+			enemies.pop_back();
+		}
+	}
 }
 
 void ObjectMenu()
@@ -202,8 +304,4 @@ void CombatState()
 		break;
 	}
 }
-
-
-
-
 #endif // !__UTILS_H__
