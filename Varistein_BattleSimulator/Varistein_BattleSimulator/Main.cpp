@@ -29,7 +29,13 @@ int main()
 			// PerformAction();
 
 			// Check();
+			if (player->GetEnergy() < 10)
+			{
+				player->SetEnergy(player->GetEnergy() + 1);
+			}
 		}
+
+		cout << endl << endl;
 
 	} while (player->GetHP() > 0 && player->state != BattleState::RUN);
 

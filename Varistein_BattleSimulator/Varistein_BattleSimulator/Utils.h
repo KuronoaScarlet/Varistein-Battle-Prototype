@@ -6,6 +6,7 @@
 
 using namespace std;
 bool pass = false;
+float auxDmg = 0;
 
 enum struct Tag
 {
@@ -16,18 +17,21 @@ enum struct Tag
 class Ability
 {
 public:
-	Ability(int _energy, int _value, int _cooldown, const char* _name, Tag _tag) : energy(_energy), value(_value), cooldown(_cooldown), name(_name), tag(_tag) {}
+	Ability(int _energy, float _value, int _cooldown, const char* _name, Tag _tag) : energy(_energy), value(_value), cooldown(_cooldown), name(_name), tag(_tag) {}
 	~Ability() {}
 
+	// Getters
 	int GetEnergy() { return energy; }
-	int GetValue() { return value; }
+	float GetValue() { return value; }
 	int GetCooldown() { return cooldown; }
 	string GetName() { return name; }
 	Tag GetTag() { return tag; }
 
+	// Setters
+	void SetEffect(int boost, int* dmg) { auxDmg = (*dmg);  (*dmg) = (boost * 0.01) * (*dmg); }
 private:
 	int energy;
-	int value;
+	float value;
 	int cooldown = 0;
 	string name;
 	Tag tag;
@@ -53,17 +57,20 @@ public:
 	int GetHP() { return hp; }
 	int GetDef() { return def; }
 	int GetAtk() { return atk; }
+	int GetEnergy() { return energy; }
 	string GetName() { return name; }
 
 	// Setters
 	void SetHP(int _hp) { hp = _hp; }
-	void SetDef(int _def) { hp = _def; }
-	void SetAtk(int _atk) { hp = _atk; }
+	void SetDef(int _def) { def = _def; }
+	void SetAtk(int _atk) { atk = _atk; }
+	void SetEnergy(int _energy) { energy = _energy; }
 	void SetDefState(bool _defendState) { defendState = _defendState; }
 
 protected:
 	int hp, def, atk;
 	bool defendState = false;
+	int energy = 2;
 	string name;
 
 public:
@@ -88,7 +95,7 @@ void ShowStats()
 {
 	for (int i = 0; i < allies.size(); i++)
 	{
-		cout << allies.at(i)->GetName() << "   " << "HP: " << allies.at(i)->GetHP() << endl;
+		cout << allies.at(i)->GetName() << "   " << "HP: " << allies.at(i)->GetHP() << "   " << "Energy: " << allies.at(i)->GetEnergy() << endl;
 	}
 	cout << endl;
 	for (int i = 0; i < enemies.size(); i++)
@@ -145,8 +152,6 @@ void SelectAction()
 			break;
 		}
 	}
-
-	ShowStats();
 }
 
 // Combat Selector Methods
@@ -154,12 +159,23 @@ void AttackMenu()
 {
 	for (int i = 0; i < allies.at(0)->abilities.size(); i++)
 	{
-		cout << allies.at(0)->abilities.at(i)->GetName() << "   " << "Energy: " << allies.at(0)->abilities.at(i)->GetEnergy() << endl;
+		cout << allies.at(0)->abilities.at(i)->GetName() << "   " << "Energy: " << allies.at(0)->abilities.at(i)->GetEnergy();
 		if (allies.at(0)->abilities.at(i)->GetTag() == Tag::OFFENSIVE)
 		{
-			cout << "              " << "Damage: " << allies.at(0)->abilities.at(0)->GetValue() << endl;
+			cout << "    " << "Damage: " << allies.at(0)->abilities.at(i)->GetValue() << endl;
+		}
+		else if (allies.at(0)->abilities.at(i)->GetTag() == Tag::EFFECT)
+		{
+			cout << "    " << "Boost: " << allies.at(0)->abilities.at(i)->GetValue() << "%" << endl;
 		}
 	}
+
+	int selection;
+
+	scanf_s("%d", &selection);
+
+
+
 }
 
 void ObjectMenu()
@@ -172,11 +188,12 @@ void CombatState()
 	switch (allies.at(0)->state)
 	{
 	case BattleState::ATTACK:
+		ShowStats();
 		AttackMenu();
 		break;
 	case BattleState::DEFEND:
-		cout << "You are defending!" << endl;
 		allies.at(0)->SetDefState(true);
+		pass = false;
 		break;
 	case BattleState::OBJECT:
 		ObjectMenu();
