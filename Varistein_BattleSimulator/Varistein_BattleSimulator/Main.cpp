@@ -5,6 +5,8 @@ using namespace std;
 
 int main()
 {
+	// Starter variables
+
 	Character* player = new Character(70, 15, 20, "Nicole");
 	Character* enemy = new Character(200, 10, 10, "Monster");
 
@@ -58,19 +60,21 @@ int main()
 			Check();
 		}
 
-		if (player->GetOvercharged() == true && overchargedTurn == 0)
+		// Checkers
 		{
-			player->SetOverchaged(false);
-			cout << "You're no longer Overcharged!" << endl;
+			if (player->GetOvercharged() == true && overchargedTurn == 0)
+			{
+				player->SetOverchaged(false);
+				cout << "You're no longer Overcharged!" << endl;
+			}
+			if (overchargedTurn > 0) overchargedTurn--;
+
+			if (player->state == BattleState::RUN || enemies.size() == 0 || allies.size() == 0) cont = false;
+
+			player->state = BattleState::UNKNOWN;
+			pass = false;
+			order.clear();
 		}
-		if (overchargedTurn > 0) overchargedTurn--;
-
-		if (player->state == BattleState::RUN || enemies.size() == 0 || allies.size() == 0) cont = false;
-
-		player->state = BattleState::UNKNOWN;
-		pass = false;
-		order.clear();
-
 		cout << endl << endl;
 
 	} while (cont);
