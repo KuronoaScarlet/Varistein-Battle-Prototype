@@ -49,7 +49,13 @@ int main()
 		
 		// Enemy Action
 		{
-
+			system("cls");
+			ShowStats();
+			system("pause");
+			system("cls");
+			cout << endl << enemies.at(0)->GetName() << " attacks!" << endl;
+			PerformEnemyAction();
+			Check();
 		}
 
 		if (player->GetOvercharged() == true && overchargedTurn == 0)
@@ -59,7 +65,7 @@ int main()
 		}
 		if (overchargedTurn > 0) overchargedTurn--;
 
-		if (player->GetHP() < 0 || player->state == BattleState::RUN || enemies.size() == 0) cont = false;
+		if (player->state == BattleState::RUN || enemies.size() == 0 || allies.size() == 0) cont = false;
 
 		player->state = BattleState::UNKNOWN;
 		pass = false;

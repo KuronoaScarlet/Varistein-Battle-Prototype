@@ -278,11 +278,25 @@ void Check()
 			enemies.pop_back();
 		}
 	}
+
+	for (int i = 0; i < allies.size(); i++)
+	{
+		if (allies.at(i)->GetHP() <= 0)
+		{
+			cout << allies.at(i)->GetName() << " has died!" << endl;
+			allies.pop_back();
+		}
+	}
 }
 
 void ObjectMenu()
 {
-
+	cout << "This feature is not up yet! Take another action!" << endl;
+	allies.at(0)->state = BattleState::UNKNOWN;
+	system("pause");
+	system("cls");
+	pass = false;
+	SelectAction();
 }
 
 void CombatState()
@@ -302,6 +316,38 @@ void CombatState()
 		break;
 	default:
 		break;
+	}
+}
+
+void PerformEnemyAction()
+{
+	int totalDmg = 0;
+
+	for (int i = 0; i < enemies.at(0)->abilities.size(); i++)
+	{
+		if (enemies.at(0)->abilities.at(i)->GetTag() == Tag::OFFENSIVE)
+		{
+			// Damage Formula (HP = HP - ((Atk + abilitydmg) - Def)) Boosted Dmg is calculated earlier.
+			int totalAttackDmg = enemies.at(0)->GetAtk() + enemies.at(0)->abilities.at(i)->GetValue();
+			int dmgDone;
+			if (allies.at(0)->GetDefState() == false)
+			{
+				dmgDone = totalAttackDmg - allies.at(0)->GetDef();
+			}
+			else
+			{
+				dmgDone = totalAttackDmg - (allies.at(0)->GetDef() * 2);
+				if (dmgDone < 0)
+				{
+					dmgDone = 0;
+				}
+			}
+			allies.at(0)->SetHP(allies.at(0)->GetHP() - dmgDone);
+			cout << enemies.at(0)->abilities.at(i)->GetName() << " did " << dmgDone << " damage to " << allies.at(0)->GetName() << "." << endl << endl;
+			totalDmg += dmgDone;
+
+			system("pause");
+		}
 	}
 }
 #endif // !__UTILS_H__
