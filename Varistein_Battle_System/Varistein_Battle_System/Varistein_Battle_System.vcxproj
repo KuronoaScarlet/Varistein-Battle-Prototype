@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2b248334-87c6-42b3-ac70-f01aff8226b2}</ProjectGuid>
-    <RootNamespace>VaristeinBattleSimulator</RootNamespace>
+    <ProjectGuid>{d563869f-a1eb-4343-b1c5-95369e3f1451}</ProjectGuid>
+    <RootNamespace>VaristeinBattleSystem</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

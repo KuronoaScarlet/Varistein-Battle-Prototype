@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <time.h>
 
 using namespace std;
 bool pass = false;
@@ -55,13 +56,14 @@ enum class BattleState
 class Character
 {
 public:
-	Character(int _hp, int _def, int _atk, const char* _name) : hp(_hp), def(_def), atk(_atk), name(_name) {}
+	Character(int _hp, int _def, int _atk, int _cc, const char* _name) : hp(_hp), def(_def), atk(_atk), cc(_cc), name(_name) {}
 	~Character() {}
 
 	// Getters
 	int GetHP() { return hp; }
 	int GetDef() { return def; }
 	int GetAtk() { return atk; }
+	int GetCc() { return cc; }
 	int GetEnergy() { return energy; }
 	int GetTotalEnergy() { return totalEnergy; }
 	int GetOverchargedValue() { return overchargedValue; }
@@ -74,6 +76,7 @@ public:
 	void SetHP(int _hp) { hp = _hp; }
 	void SetDef(int _def) { def = _def; }
 	void SetAtk(int _atk) { atk = _atk; }
+	void SetCc(int _cc) { cc = _cc; }
 	void SetEnergy(int _energy) { energy = _energy; }
 	void SetTotalEnergy(int _totalEnergy) { totalEnergy = _totalEnergy; }
 	void SetOverchargedValue(int _overchargedValue) { overchargedValue = _overchargedValue; }
@@ -81,7 +84,7 @@ public:
 	void SetOverchaged(bool _overcharged) { overcharged = _overcharged; }
 
 protected:
-	int hp, def, atk;
+	int hp, def, atk, cc;
 	bool defendState = false;
 	bool overcharged = false;
 	int energy = 2;
@@ -98,185 +101,15 @@ public:
 std::vector<Character*> allies;
 std::vector<Character*> enemies;
 
-// Ability Order List
-std::vector<Ability*> order;
-
-// First Menu's Methods
-int Menu()
-{
-	int select;
-	cout << "Choose action:" << endl << "   1. Attack" << endl << "   2. Defend" << endl << "   3. Object" << endl <<"   4. Run" << endl;
-	scanf_s("%d", &select);
-	return select;
-}
-
-void ShowStats()
-{
-	for (int i = 0; i < allies.size(); i++)
-	{
-		cout << allies.at(i)->GetName() << "   " << "HP: " << allies.at(i)->GetHP() << "   " << "Energy: " << allies.at(i)->GetEnergy() << "/" << allies.at(i)->GetTotalEnergy() << endl;
-	}
-	cout << endl;
-	for (int i = 0; i < enemies.size(); i++)
-	{
-		cout << enemies.at(i)->GetName() << "   " << "HP: " << enemies.at(i)->GetHP() << endl;
-	}
-	cout << endl << endl;
-}
-
-void SelectAction()
-{
-	ShowStats();
-
-	int selection;
-
-	while (pass == false)
-	{
-		selection = Menu();
-
-		switch (selection)
-		{
-		case 1:
-			system("cls");
-			cout << "Attack!" << endl;
-			pass = true;
-			allies.at(0)->state = BattleState::ATTACK;
-			break;
-		case 2:
-			system("cls");
-			cout << "Defending!" << endl;
-			allies.at(0)->state = BattleState::DEFEND;
-			pass = true;
-			break;
-		case 3:
-			system("cls");
-			cout << "Object!" << endl;
-			allies.at(0)->state = BattleState::OBJECT;
-			pass = true;
-			break;
-		case 4:
-			system("cls");
-			cout << "Running!" << endl;
-			allies.at(0)->state = BattleState::RUN;
-			pass = true;
-			break;
-		case 0:
-			system("cls");
-			allies.at(0)->SetHP(0);
-			pass = true;
-			break;
-		default:
-			system("cls");
-			cout << "Repeat the input" << endl;
-			break;
-		}
-	}
-}
-
-// Combat Selector Methods
-void AttackMenu()
-{
-	for (int i = 0; i < allies.at(0)->abilities.size(); i++)
-	{
-		cout << i+1 << ". " << allies.at(0)->abilities.at(i)->GetName() << "   " << "Energy: " << allies.at(0)->abilities.at(i)->GetEnergy();
-		if (allies.at(0)->abilities.at(i)->GetTag() == Tag::OFFENSIVE)
-		{
-			cout << "    " << "Damage: " << allies.at(0)->abilities.at(i)->GetValue() << endl;
-		}
-		else if (allies.at(0)->abilities.at(i)->GetTag() == Tag::EFFECT)
-		{
-			cout << "    " << "Boost: " << allies.at(0)->abilities.at(i)->GetValue() << "%" << endl;
-		}
-	}
-	cout << endl << "Select the sequence of the abilities you want to use! Be careful with the energy, using more energy than your total will overcharge yourself! (Example, input 21): " << endl;
-
-	int selection;
-
-	scanf_s("%d", &selection);
-
-	system("cls");
-
-	while (selection > 0)
-	{
-		int ability = (selection % 10) - 1;
-		selection = selection / 10;
-
-		order.push_back(allies.at(0)->abilities.at(ability));
-	}
-
-	int aux = 0;
-
-	for (int i = order.size()-1; i >= 0; i--)
-	{
-		aux = aux + order.at(i)->GetEnergy();
-	}
-
-	if (aux <= allies.at(0)->GetEnergy())
-	{
-		cout << "Energy used: " << aux << endl;
-	}
-	else if (aux > allies.at(0)->GetEnergy())
-	{
-		if (allies.at(0)->GetOvercharged() == false)
-		{
-			cout << "Energy used: " << aux << endl << "Overcharge!" << endl << endl;
-			allies.at(0)->SetOverchargedValue(aux - allies.at(0)->GetEnergy());
-			allies.at(0)->SetOverchaged(true);
-			overchargedTurn = 1;
-		}
-		else if (allies.at(0)->GetOvercharged() == true)
-		{
-			cout << "You're on an overcharged state! Select again your abilities!" << endl;
-			order.clear();
-			AttackMenu();
-		}
-	}
-	system("pause");
-}
-
-void PerformAction()
-{
-	int totalDmg = 0;
-	for (int i = order.size() - 1; i >= 0; i--)
-	{
-		if (order.at(i)->GetTag() == Tag::OFFENSIVE)
-		{
-			// Damage Formula (HP = HP - ((Atk + abilitydmg) - Def)) Boosted Dmg is calculated earlier.
-			int totalAttackDmg = allies.at(0)->GetAtk() + order.at(i)->GetValue();
-			int dmgDone = totalAttackDmg - enemies.at(0)->GetDef();
-			enemies.at(0)->SetHP(enemies.at(0)->GetHP() - dmgDone);
-			cout << order.at(i)->GetName() << " did " << dmgDone << " damage to " << enemies.at(0)->GetName() << "." << endl << endl;
-			totalDmg += dmgDone;
-
-			if (order.at(i)->GetBoosted() == true)
-			{
-				order.at(i)->SetValue(auxDmg);
-				order.at(i)->SetBoosted(false);
-			}
-
-			system("pause");
-		}
-		else if (order.at(i)->GetTag() == Tag::EFFECT && order.at(i - 1)->GetTag() == Tag::OFFENSIVE)
-		{
-			auxDmg = order.at(i - 1)->GetValue();
-			order.at(i - 1)->SetEffect(order.at(i)->GetValue());
-			cout << order.at(i)->GetName() << " boosted " << order.at(i - 1)->GetName() << " by a " << order.at(i)->GetValue() << "%" << endl << endl;
-			
-			system("pause");
-		}
-	}
-
-	cout << "You did " << totalDmg << " total damage to " << enemies.at(0)->GetName() << "." << endl;
-}
-
-void Check()
+bool Check()
 {
 	for (int i = 0; i < enemies.size(); i++)
 	{
 		if (enemies.at(i)->GetHP() <= 0)
 		{
-			cout << enemies.at(i)->GetName() << " has died!" << endl;
+			enemies.at(i)->abilities.clear();
 			enemies.pop_back();
+			return false;
 		}
 	}
 
@@ -284,71 +117,57 @@ void Check()
 	{
 		if (allies.at(i)->GetHP() <= 0)
 		{
-			cout << allies.at(i)->GetName() << " has died!" << endl;
+			allies.at(i)->abilities.clear();
 			allies.pop_back();
+			return false;
 		}
 	}
+
+	return true;
 }
 
-void ObjectMenu()
+bool CriticalAttack(std::vector<Character*>& attacker)
 {
-	cout << "This feature is not up yet! Take another action!" << endl;
-	allies.at(0)->state = BattleState::UNKNOWN;
-	system("pause");
-	system("cls");
-	pass = false;
-	SelectAction();
-}
-
-void CombatState()
-{
-	switch (allies.at(0)->state)
+	int crit = rand() % 100 + 1;
+	if (crit <= attacker[0]->GetCc())
 	{
-	case BattleState::ATTACK:
-		ShowStats();
-		AttackMenu();
-		break;
-	case BattleState::DEFEND:
-		allies.at(0)->SetDefState(true);
-		pass = false;
-		break;
-	case BattleState::OBJECT:
-		ObjectMenu();
-		break;
-	default:
-		break;
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
-void PerformEnemyAction()
+void PerformSimulatedAction(std::vector<Character*>& attacker, std::vector<Character*>& defender)
 {
 	int totalDmg = 0;
+	int select;
 
-	for (int i = 0; i < enemies.at(0)->abilities.size(); i++)
+
+	if (attacker[0]->abilities.size() > 1)
 	{
-		if (enemies.at(0)->abilities.at(i)->GetTag() == Tag::OFFENSIVE)
-		{
-			// Damage Formula (HP = HP - ((Atk + abilitydmg) - Def)) Boosted Dmg is calculated earlier.
-			int totalAttackDmg = enemies.at(0)->GetAtk() + enemies.at(0)->abilities.at(i)->GetValue();
-			int dmgDone;
-			if (allies.at(0)->GetDefState() == false)
-			{
-				dmgDone = totalAttackDmg - allies.at(0)->GetDef();
-			}
-			else
-			{
-				dmgDone = totalAttackDmg - (allies.at(0)->GetDef() * 2);
-				if (dmgDone < 0)
-				{
-					dmgDone = 0;
-				}
-			}
-			allies.at(0)->SetHP(allies.at(0)->GetHP() - dmgDone);
-			cout << enemies.at(0)->abilities.at(i)->GetName() << " did " << dmgDone << " damage to " << allies.at(0)->GetName() << "." << endl << endl;
-			totalDmg += dmgDone;
-
-			system("pause");
-		}
+		select = rand() % 2;
 	}
+	else
+	{
+		select = 0;
+	}
+
+	// Damage Formula (HP = HP - ((Atk + abilitydmg) - Def)) Boosted Dmg is calculated earlier.
+	int totalAttackDmg = attacker.at(0)->GetAtk() + attacker.at(0)->abilities.at(select)->GetValue();
+	if (CriticalAttack(attacker))
+	{
+		totalAttackDmg *= 1.5;
+	}
+	int dmgDone;
+
+	dmgDone = totalAttackDmg - defender.at(0)->GetDef();
+			
+	defender.at(0)->SetHP(defender.at(0)->GetHP() - dmgDone);
+	totalDmg += dmgDone;
+	
+	
 }
+
 #endif // !__UTILS_H__

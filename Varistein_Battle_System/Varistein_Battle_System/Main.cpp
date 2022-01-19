@@ -24,7 +24,7 @@ int main()
 
 	bool cont = true;
 
-	do 
+	do
 	{
 		// Player Action
 		SelectAction();
@@ -45,7 +45,7 @@ int main()
 				player->SetEnergy(player->GetTotalEnergy() - player->GetOverchargedValue());
 			}
 		}
-		
+
 		// Enemy Action
 		if (player->state != BattleState::RUN && player->state != BattleState::OBJECT && enemies.size() != 0)
 		{

@@ -105,7 +105,7 @@ std::vector<Ability*> order;
 int Menu()
 {
 	int select;
-	cout << "Choose action:" << endl << "   1. Attack" << endl << "   2. Defend" << endl << "   3. Object" << endl <<"   4. Run" << endl;
+	cout << "Choose action:" << endl << "   1. Attack" << endl << "   2. Defend" << endl << "   3. Object" << endl << "   4. Run" << endl;
 	scanf_s("%d", &select);
 	return select;
 }
@@ -178,7 +178,7 @@ void AttackMenu()
 {
 	for (int i = 0; i < allies.at(0)->abilities.size(); i++)
 	{
-		cout << i+1 << ". " << allies.at(0)->abilities.at(i)->GetName() << "   " << "Energy: " << allies.at(0)->abilities.at(i)->GetEnergy();
+		cout << i + 1 << ". " << allies.at(0)->abilities.at(i)->GetName() << "   " << "Energy: " << allies.at(0)->abilities.at(i)->GetEnergy();
 		if (allies.at(0)->abilities.at(i)->GetTag() == Tag::OFFENSIVE)
 		{
 			cout << "    " << "Damage: " << allies.at(0)->abilities.at(i)->GetValue() << endl;
@@ -206,7 +206,7 @@ void AttackMenu()
 
 	int aux = 0;
 
-	for (int i = order.size()-1; i >= 0; i--)
+	for (int i = order.size() - 1; i >= 0; i--)
 	{
 		aux = aux + order.at(i)->GetEnergy();
 	}
@@ -261,7 +261,7 @@ void PerformAction()
 			auxDmg = order.at(i - 1)->GetValue();
 			order.at(i - 1)->SetEffect(order.at(i)->GetValue());
 			cout << order.at(i)->GetName() << " boosted " << order.at(i - 1)->GetName() << " by a " << order.at(i)->GetValue() << "%" << endl << endl;
-			
+
 			system("pause");
 		}
 	}
