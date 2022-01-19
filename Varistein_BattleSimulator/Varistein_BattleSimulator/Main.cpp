@@ -47,7 +47,7 @@ int main()
 		}
 		
 		// Enemy Action
-		if (player->state != BattleState::RUN && player->state != BattleState::OBJECT)
+		if (player->state != BattleState::RUN && player->state != BattleState::OBJECT && enemies.size() != 0)
 		{
 			system("cls");
 			ShowStats();

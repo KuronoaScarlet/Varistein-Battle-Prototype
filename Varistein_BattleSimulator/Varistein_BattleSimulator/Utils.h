@@ -32,6 +32,7 @@ public:
 	// Setter
 	void SetEffect(int boost) { value = value + (boost * 0.01) * value; boosted = true; }
 	void SetValue(int _value) { value = _value; }
+	void SetBoosted(int boost) { boosted = boost; }
 private:
 	int energy;
 	float value;
@@ -250,7 +251,7 @@ void PerformAction()
 			if (order.at(i)->GetBoosted() == true)
 			{
 				order.at(i)->SetValue(auxDmg);
-				auxDmg = 0;
+				order.at(i)->SetBoosted(false);
 			}
 
 			system("pause");
