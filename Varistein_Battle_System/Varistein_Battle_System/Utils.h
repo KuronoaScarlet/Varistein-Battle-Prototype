@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <time.h>
 
 using namespace std;
 bool pass = false;
@@ -105,7 +106,7 @@ std::vector<Ability*> order;
 int Menu()
 {
 	int select;
-	cout << "Choose action:" << endl << "   1. Attack" << endl << "   2. Defend" << endl << "   3. Object" << endl << "   4. Run" << endl;
+	cout << "Choose action:" << endl << "   1. Attack" << endl << "   2. Defend" << endl << "   3. Run" << endl;
 	scanf_s("%d", &select);
 	return select;
 }
@@ -234,6 +235,20 @@ void AttackMenu()
 	system("pause");
 }
 
+bool CriticalAttack()
+{
+	int crit = rand() % 100 + 1;
+	if (crit <= 10)
+	{
+		cout << "Critical Hit!" << endl;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void PerformAction()
 {
 	int totalDmg = 0;
@@ -243,6 +258,10 @@ void PerformAction()
 		{
 			// Damage Formula (HP = HP - ((Atk + abilitydmg) - Def)) Boosted Dmg is calculated earlier.
 			int totalAttackDmg = allies.at(0)->GetAtk() + order.at(i)->GetValue();
+			if (CriticalAttack())
+			{
+				totalAttackDmg *= 1.5;
+			}
 			int dmgDone = totalAttackDmg - enemies.at(0)->GetDef();
 			enemies.at(0)->SetHP(enemies.at(0)->GetHP() - dmgDone);
 			cout << order.at(i)->GetName() << " did " << dmgDone << " damage to " << enemies.at(0)->GetName() << "." << endl << endl;
@@ -290,16 +309,6 @@ void Check()
 	}
 }
 
-void ObjectMenu()
-{
-	cout << "This feature is not up yet! Take another action!" << endl;
-	allies.at(0)->state = BattleState::UNKNOWN;
-	system("pause");
-	system("cls");
-	pass = false;
-	SelectAction();
-}
-
 void CombatState()
 {
 	switch (allies.at(0)->state)
@@ -312,9 +321,7 @@ void CombatState()
 		allies.at(0)->SetDefState(true);
 		pass = false;
 		break;
-	case BattleState::OBJECT:
-		ObjectMenu();
-		break;
+
 	default:
 		break;
 	}
@@ -330,6 +337,10 @@ void PerformEnemyAction()
 		{
 			// Damage Formula (HP = HP - ((Atk + abilitydmg) - Def)) Boosted Dmg is calculated earlier.
 			int totalAttackDmg = enemies.at(0)->GetAtk() + enemies.at(0)->abilities.at(i)->GetValue();
+			if (CriticalAttack())
+			{
+				totalAttackDmg *= 1.5;
+			}
 			int dmgDone;
 			if (allies.at(0)->GetDefState() == false)
 			{
